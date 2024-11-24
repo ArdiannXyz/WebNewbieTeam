@@ -1,0 +1,269 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 ;
+    border-bottom: 1px solid #ccc;
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    z-index: 3;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    left: 0;
+    width: 100%; /* Lebar penuh */
+    font-weight: 500;
+    height: 50px;
+    margin-bottom: 100px;
+  }
+  
+  .header .title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-left: 0;
+  }
+  
+  .logout {
+    margin-left: auto;
+    border: 1px solid #000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none; /* Menghapus garis bawah */
+    color: #000; /* Warna teks */
+    font-size: 12px;
+    margin-right: 10px;
+    display: inline-block; /* Supaya tampak seperti tombol */
+  }
+  
+  .text-elearning {
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    padding: 10px;
+    font-size: 12px;
+  }
+  
+  .logo {
+    margin-left: 0;
+    justify-content: center;
+    display: flex;
+    margin-right: auto;
+    margin-left: 20px;
+    align-items: center;
+    max-width: 100%; /* Lebar maksimal gambar tidak lebih dari lebar container */
+    height: auto; /* Tinggi menyesuaikan proporsi */
+  }
+  
+  .logo img {
+    width: auto;
+    height: 28px;
+  }
+  
+  .menu-icon {
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+  }
+  
+  .sidebar {
+    height: auto;
+    width: 200px;
+    background-color: #154ABC;
+    color: #fff;
+    position: fixed;
+    top: 50px;
+    left: 0;
+    bottom: 0;
+    padding-top: 20px;
+    transition: transform 0.3s ease, width 0.3s ease;
+    transform: translateX(-200px); 
+    z-index: 2;
+  }
+ 
+  .sidebar.sidebar-expanded {
+    transform: translateX(0);
+  }
+  
+  .container.sidebar-expanded-content {
+    margin-left: 200px;
+  }
+  
+  .sidebar.hidden {
+    transform: translateX(-100%);
+  }
+  
+  .content.sidebar-expanded-content {
+    margin-left: 0; 
+  }
+ 
+  .content.sidebar-expanded-container {
+    margin-left: 0; /* Konten bergeser ke kiri saat sidebar memenuhi layar */
+  }
+  
+  .sidebar a {
+    display: block;
+    padding: 15px 20px;
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  .sidebar a:hover {
+    background-color: #4680fd;
+  }
+
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container.sidebar-expanded-content {
+  margin-left: 200px; /* Geser konten ke kanan jika sidebar aktif */
+}
+
+.alert-custom {
+  font-size: 16px; /* Ukuran font lebih kecil */
+  padding: 10px 15px; /* Padding lebih kecil */
+  margin-bottom: 15px; /* Jarak antara alert dan elemen lain */
+  width: 100%;
+}
+
+
+.register-box {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 600px;
+  height: auto;
+  margin: 50px;
+  transition: width 0.3s ease;
+}
+
+.register-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    border-bottom: 1px solid #ccc;
+    position: relative; /* Agar pseudo-element diposisikan relatif ke elemen ini */
+    padding-bottom: 15px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.input-group input, .input-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 10px;
+    background-color: #154ABC;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: #2f6ffa;
+}
+
+/* Footer biasa */
+.footer {
+  margin-top: 100px;
+  background-color: #0a3aa2;
+  color: #fff;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  bottom: 0;
+  transition: margin-left 0.3s ease, width 0.3s ease; /* Menambahkan transisi */
+}
+
+/* Footer saat sidebar aktif */
+.footer-active {
+  margin-left: 200px; /* Geser footer ke kanan */
+  width: calc(100% - 200px); /* Sesuaikan lebar footer */
+}
+
+
+
+#footer-contact {
+  font-weight: 700;
+}
+
+.footer img {
+  height: 80px;
+}
+
+.contact-info {
+  text-align: right;
+  margin-right: 20px;
+}
+
+.contact-info p {
+  margin: 5px 0;
+  font-weight: 200;
+}
+
+.contact-info i {
+  margin-right: 15px;
+}
+
+.school-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.contact-info img {
+  margin-left: 20px;
+}
+
+.school-info p {
+  margin: 20px;
+  font-weight: 700;
+}
+
+.school-info img {
+  justify-content: center;
+  align-items: center;
+}

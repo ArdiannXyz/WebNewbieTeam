@@ -1,0 +1,78 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.modal {
+  background-color: white;
+  width: 400px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  position: relative;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.modal-header .close {
+  font-size: 20px;
+  cursor: pointer;
+}
+.modal-body {
+  background-color: #e6f2ff;
+  padding: 20px;
+  border-radius: 5px;
+}
+.modal-body label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+.modal-body select,
+.modal-body input[type="file"],
+.modal-body input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.modal-body a {
+  display: block;
+  margin-bottom: 20px;
+  color: #007bff;
+  text-decoration: none;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+.modal-footer button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+.modal-footer .save {
+  background-color: #0056b3;
+  color: white;
+}
+.modal-footer .cancel {
+  background-color: #f0f0f0;
+  color: black;
+}

@@ -1,0 +1,129 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+}
+.header .logo {
+  display: flex;
+  align-items: center;
+}
+.header .logo img {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+.header .logo span {
+  font-size: 20px;
+  font-weight: bold;
+  padding-left: 10px;
+}
+.header .logout {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.content {
+  padding: 20px;
+}
+.breadcrumb {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+.breadcrumb a {
+  color: #007bff;
+  text-decoration: none;
+}
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+.upload-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.upload-container h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 24px;
+  text-align: center;
+}
+.sidebar {
+  background-color: #003366;
+  color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  margin-right: 20px;
+  width: 150px;
+}
+.sidebar h3 {
+  margin-top: 0;
+  text-align: center;
+}
+.file-list {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.file-list th,
+.file-list td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+.file-list th {
+  background-color: #f5f5f5;
+}
+.file-list td a {
+  color: #007bff;
+  text-decoration: none;
+}
+.file-list td a:hover {
+  text-decoration: underline;
+}
+.file-list .delete-btn {
+  background-color: #dc3545;
+  border: 1px solid #ddd;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.buttons {
+  display: flex;
+  justify-content: center;
+}
+.buttons button {
+  background-color: #003366;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+.buttons button.cancel {
+  background-color: #ddd;
+  color: #000;
+}
+.upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.upload-header .upload-icon {
+  font-size: 24px;
+  cursor: pointer;
+}

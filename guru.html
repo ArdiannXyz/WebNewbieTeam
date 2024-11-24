@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-Learning</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f5f6fa;
+      }
+
+      .header {
+        background-color: #00509e;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .header img {
+        margin-right: 1rem;
+        border-radius: 50%;
+      }
+
+      .title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        flex-grow: 1;
+      }
+      .menu-icon {
+        margin-right: 1rem;
+        cursor: pointer;
+        font-size: 1.5rem;
+      }
+
+      .logout-button {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .logout-button:hover {
+        background-color: #c0392b;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 70px;
+        bottom: 0;
+        width: 250px;
+        background-color: white;
+        padding: 1rem;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      ul li a {
+        display: block;
+        padding: 0.8rem 1rem;
+        color: #34495e;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: all 0.3s;
+      }
+
+      ul li a:hover {
+        background-color: #3498db;
+        color: white;
+      }
+
+      .submenu {
+        padding-left: 1.5rem;
+      }
+
+      .content {
+        margin-left: 250px;
+        margin-top: 70px;
+        padding: 2rem;
+      }
+
+      .profile-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .profile-info h2 {
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+      }
+
+      .profile-info p {
+        color: #7f8c8d;
+      }
+
+      .profile-button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .profile-button:hover {
+        background-color: #2980b9;
+      }
+
+      .info-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .info-section h3 {
+        grid-column: 1 / -1;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+      }
+
+      .info-box {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s;
+      }
+
+      .info-box:hover {
+        transform: translateY(-5px);
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+          transition: transform 0.3s;
+        }
+
+        .sidebar.active {
+          transform: translateX(0);
+        }
+
+        .content {
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <i class="fas fa-bars menu-icon"></i>
+      <img alt="Logo" height="40" src="Foto/smk7 jember.png" width="40" />
+      <div class="title">E-Learning</div>
+      <button class="logout-button">Keluar</button>
+    </div>
+
+    <div class="sidebar">
+      <ul>
+        <li>
+          <a href="#"><i class="fas fa-home"></i> Dashboard</a>
+        </li>
+        <li>
+          <a href="kalender.html"><i class="fas fa-calendar"></i> Calendar</a>
+        </li>
+        <li>
+          <a href="profilguru.html"><i class="fas fa-user"></i> Profile</a>
+        </li>
+        <li>
+          <a href="panduan.html"><i class="fas fa-book"></i> Panduan</a>
+        </li>
+        <li>
+          <a href="#"><i class="fas fa-chalkboard-teacher"></i> Kelas</a>
+          <ul class="submenu">
+            <li><a href="#">Matematika</a></li>
+            <li><a href="#">Penjas</a></li>
+            <li><a href="#">B. Jawa</a></li>
+            <li><a href="#">B. Inggris</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="content">
+      <div class="profile-card">
+        <div class="profile-info">
+          <h2>Guru</h2>
+          <p>Matematika</p>
+        </div>
+        <button class="profile-button">Profile</button>
+      </div>
+
+      <div class="info-section">
+        <h3>Informasi Pengajaran</h3>
+        <div class="info-box">
+          <i class="fas fa-chalkboard fa-2x mb-3"></i>
+          <h4>Jumlah Kelas</h4>
+          <p style="font-size: 2rem; margin-top: 0.5rem">4</p>
+        </div>
+        <div class="info-box">
+          <i class="fas fa-users fa-2x mb-3"></i>
+          <h4>Jumlah Siswa</h4>
+          <p style="font-size: 2rem; margin-top: 0.5rem">40</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document
+        .querySelector(".menu-icon")
+        .addEventListener("click", function () {
+          document.querySelector(".sidebar").classList.toggle("active");
+        });
+    </script>
+  </body>
+</html>

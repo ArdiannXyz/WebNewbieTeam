@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - SMK Negeri 7 Jember</title>
+    <link rel="stylesheet" href="css/style-login.css" />
+    <script src="js/jquery.js"></script>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-box">
+        <div class="logo">
+          <img src="Foto/smk7 jember.png" alt="Logo SMK Negeri 7 Jember" />
+          <h2>SMK Negeri 7 Jember</h2>
+        </div>
+        <form action="login.php" method="post">
+            <?php if (isset($_SESSION['error_message'])): ?>
+            <p style="color:red;"><?php echo $_SESSION['error_message']; ?></p>
+            <?php unset($_SESSION['error_message']); // Hapus pesan setelah ditampilkan ?>
+        <?php endif; ?>
+
+          <div class="input-group">
+            <label for="nama-siswa">Nama Siswa</label>
+            <input type="text" id="nama-siswa" name="nama" placeholder="Masukkan nama anda" required />
+          </div>
+          <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="********" required />
+            <span class="show-password" onclick="togglePassword()">Show</span>
+          </div>
+          <div class="forgot-password">
+            <a href="#">Lupa Nama siswa atau password?</a>
+            <p>Kuki harus diaktifkan pada browser anda</p>
+          </div>
+          <button type="submit" class="btn_input" id="submit" name="Login">Masuk</button>
+        </form>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-content">
+        <div class="contact-info">
+          <h3>SMK Negeri 7 Jember</h3>
+          <p>Email: <a href="mailto:smkn7jember@gmail.com">smkn7jember@gmail.com</a></p>
+          <p>Website: <a href="https://smkn7jember.sch.id/">https://smkn7jember.sch.id/</a></p>
+          <p>Telepon: +6281-8094-0000</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Fungsi untuk toggle password visibility -->
+  </body>
+</html>

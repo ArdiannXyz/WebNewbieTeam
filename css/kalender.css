@@ -1,0 +1,115 @@
+body {
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+.sidebar {
+  width: 200px;
+  background-color: #003366;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 20px;
+  z-index: 500;
+}
+.sidebar a {
+  display: block;
+  color: white;
+  padding: 15px;
+  text-decoration: none;
+  border-bottom: 1px solid #00509e;
+}
+.sidebar a:hover {
+  background-color: #00509e;
+}
+.sidebar .logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.sidebar .logo img {
+  width: 50px;
+}
+.content {
+  margin-left: 200px;
+  padding: 20px;
+  margin-top: 60px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+.header .menu-icon {
+  font-size: 24px;
+  cursor: pointer;
+}
+.header .title {
+  font-size: 24px;
+  font-weight: bold;
+}
+.header .logout {
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.breadcrumb {
+  margin: 20px 0;
+  font-size: 14px;
+  background-color: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.breadcrumb a {
+  color: #007bff;
+  text-decoration: none;
+}
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+.calendar {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.calendar-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.calendar-header .nav {
+  font-size: 24px;
+  cursor: pointer;
+}
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.calendar-table th,
+.calendar-table td {
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+.calendar-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}

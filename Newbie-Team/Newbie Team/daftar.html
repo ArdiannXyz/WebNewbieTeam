@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - SMK Negeri 7 Jember</title>
+    <link rel="stylesheet" href="css/style-daftar.css">
+</head>
+<body>
+    <div class="container">
+        <div class="register-box">
+            <h2>Daftar</h2>
+            <form action="daftar.php" method="POST">
+                <div class="input-group">
+                    <label for="nama">Nama</label>
+                    <input type="text" id="nama" name="nama" placeholder="Masukkan nama anda" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="********" required>
+                </div>
+                <div class="input-group">
+                    <label for="confirm-password">Ulangi password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" placeholder="********" required>
+                </div>
+                <div class="input-group">
+                    <label for="role">Sebagai</label>
+                    <select id="role" name="role" required>
+                        <option value="guru">pilih peran</option>
+                        <option value="guru">Guru</option>
+                        <option value="siswa">Siswa</option>
+                        <option value="admin">admin</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Masukkan email anda" required>
+                </div>
+                <button type="submit" class="btn-submit">Daftar</button>
+            </form>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="logo">
+                <img src="Foto/smk7 jember.png" alt="Logo SMK Negeri 7 Jember">
+                <h3>SMK Negeri 7 Jember</h3>
+            </div>
+            <div class="contact-info">
+                <p>Email: smkn7jember@gmail.com</p>
+                <p>Website: <a href="https://smkn7jember.sch.id/">smkn7jember.sch.id</a></p>
+                <p>Telp: +6281-8094-0000</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

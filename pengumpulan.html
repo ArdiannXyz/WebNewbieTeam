@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/pengumpulan.css" />
+    <title>Dashboard E-Learning</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="logo">
+        <img alt="Logo" height="40" src="Foto/smk7 jember.png" width="40" />
+        <span>E-Learning</span>
+      </div>
+      <ul>
+        <li>
+          <a href="#"><i class="fas fa-home"></i> Dashboard</a>
+        </li>
+        <li>
+          <a href="kalender.html"><i class="fas fa-calendar"></i> Calendar</a>
+        </li>
+        <li>
+          <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+        </li>
+        <li>
+          <a href="panduan.html"><i class="fas fa-book"></i> Panduan</a>
+        </li>
+        <li>
+          <a href="materi.html"><i class="fas fa-chalkboard"></i> Kelas</a>
+        </li>
+        <ul class="submenu">
+          <li>
+            <a href="#"><i class="fas fa-calculator"></i> Matematika</a>
+          </li>
+          <li>
+            <a href="#"><i class="fas fa-running"></i> Penjas</a>
+          </li>
+          <li>
+            <a href="#"><i class="fas fa-book-open"></i> B. Jawa</a>
+          </li>
+          <li>
+            <a href="#"><i class="fas fa-language"></i> B. Inggris</a>
+          </li>
+        </ul>
+      </ul>
+      <button class="logout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+    </div>
+
+    <div class="content">
+      <div class="header">
+        <h1><i class="fas fa-school"></i> SMK 7 JEMBER (E-Learning)</h1>
+        <p class="breadcrumb">
+          <i class="fas fa-home"></i> Dashboard / My Courses /
+          <a href="#">Matematika</a>
+        </p>
+      </div>
+
+      <div class="status-container">
+        <h2><i class="fas fa-tasks"></i> Status Pengumpulan</h2>
+        <div class="status-details">
+          <div class="status-left">
+            <p><i class="fas fa-upload"></i> Status pengumpulan</p>
+            <p><i class="fas fa-star"></i> Status penilaian</p>
+            <p><i class="fas fa-clock"></i> Batas waktu</p>
+            <p><i class="fas fa-hourglass-half"></i> Sisa Waktu</p>
+            <p><i class="fas fa-edit"></i> Terakhir diedit</p>
+            <p><i class="fas fa-paper-plane"></i> Pengumpulan tugas</p>
+          </div>
+          <div class="status-right">
+            <p>Belum mengumpulkan</p>
+            <p>Belum ada nilai</p>
+            <p>Rabu, 25 September 2024, 17:00 PM</p>
+            <p>1 Hari 10 Jam</p>
+            <p>-</p>
+            <p>
+              <a href="uploadtugas_siswa.html">
+                <button><i class="fas fa-upload"></i> Masukkan tugas</button>
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

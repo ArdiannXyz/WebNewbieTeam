@@ -1,0 +1,95 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: white;
+  border-bottom: 1px solid #ccc;
+}
+.header .menu-icon {
+  font-size: 24px;
+}
+.header .title {
+  font-size: 18px;
+  font-weight: bold;
+}
+.header .logout-button {
+  padding: 5px 10px;
+  border: 1px solid #000;
+  background-color: white;
+  cursor: pointer;
+}
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 50px);
+}
+.card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.card h2 {
+  color: #003366;
+  margin-bottom: 20px;
+}
+.profile {
+  display: flex;
+  width: 100%;
+}
+.profile .left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.profile .left img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  margin-bottom: 10px;
+}
+.profile .left button {
+  margin: 5px 0;
+  padding: 5px 10px;
+  border: 1px solid #003366;
+  background-color: white;
+  color: #003366;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.profile .left button i {
+  margin-right: 5px;
+}
+.profile .right {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.profile .right .info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.profile .right .info div {
+  flex: 1;
+}
+.profile .right .info div b {
+  display: block;
+  margin-bottom: 5px;
+}

@@ -1,0 +1,79 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>E - Learning</title>
+        <!-- Font Awesome for icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="css/admin.css">
+        <!-- Custom JS -->
+        <script src="script.js" defer></script>
+    </head>
+  <body>
+    <div class="sidebar">
+      <a href="#" class="active"><i class="fas fa-bars"></i></a>
+      <a href="daftar1.html">Dashboard</a>
+      <a href="#">Calendar</a>
+      <a href="#">Profile</a>
+      <a href="panduan.html">Panduan</a>
+      <a class="dropdown-btn" href="javascript:void(0);" id="dropdown-btn" onclick="toggleDropdown()">
+        Kelas
+        <i class="fas fa-caret-down"> </i>
+      </a>
+      <div class="dropdown" id="dropdown">
+        <a href="#"> Matematika </a>
+        <a href="#"> Penjaskes </a>
+        <a href="#"> B.Jawa </a>
+        <a href="#"> B.Inggris </a>
+      </div>
+    </div>
+    <div class="header">
+      <h1>E - Learning</h1>
+      <button>Keluar</button>
+    </div>
+    <div class="content">
+      <div class="profile-card">
+        <div class="info">
+          <h2>Ryan Adi Saputra</h2>
+          <p>Multimedia - 1</p>
+        </div>
+        <button>Profile</button>
+      </div>
+      <div class="grid-container">
+        <div class="card">
+          <h3>Matematika</h3>
+          <ul>
+            <li><i class="fas fa-user"></i> Ismail Bin Mail</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Penjaskes</h3>
+          <ul>
+            <li><i class="fas fa-user"></i> Susanti</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Tugas</h3>
+          <ul>
+            <li><i class="fas fa-folder"></i> Tugas AI - jabar</li>
+            <li><i class="fas fa-folder"></i> Tugas Job Application</li>
+            <li><i class="fas fa-folder"></i> Tugas Boso Kromo</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>B.Inggris</h3>
+          <ul>
+            <li><i class="fas fa-user"></i> Steven hendoyono</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>B.Jawa</h3>
+          <ul>
+            <li><i class="fas fa-user"></i> Rosalina Muti</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

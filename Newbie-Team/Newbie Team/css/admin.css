@@ -1,0 +1,152 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
+  .sidebar {
+    width: 200px;
+    background-color: #004a8f;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 20px;
+  }
+  .sidebar a {
+    display: block;
+    color:#fff;
+    padding: 10px 15px;
+    text-decoration: none;
+    z-index: 1; 
+    position: relative; 
+  }
+  
+  .sidebar a:hover {
+    background-color: #0891d1;
+  }
+
+  .header {
+    background-color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    margin-left: 200px;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+  .header button {
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .header button:hover {
+    background-color: #f4f4f4;
+  }
+  .content {
+    margin-left: 200px;
+    padding: 20px;
+  }
+  .profile-card {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #ddd;
+  }
+  .profile-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 20px;
+  }
+  .profile-card .info {
+    flex-grow: 1;
+  }
+  .profile-card .info h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+  .profile-card .info p {
+    margin: 5px 0 0;
+    color: #666;
+  }
+  .profile-card button {
+    background-color: #004a8f;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  .profile-card button:hover {
+    background-color: #1565c0;
+  }Z
+  .card {
+    background-color: rgb(196, 196, 196);
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #cacaca;
+  }
+  .card h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: white;
+    background-color: #004a8f;
+    padding: 10px;
+  }
+  .card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .card ul li {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  .card ul li:last-child {
+    border-bottom: none;
+  }
+  .card ul li i {
+    margin-right: 10px;
+  }
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .dropdown {
+    display: none;
+    background-color: #004a8f;
+  }
+  .dropdown a {
+    padding-left: 40px;
+  }
+  .dropdown-btn {
+    cursor: pointer;
+  }
+  .dropdown-btn.active + .dropdown {
+    display: block;
+  }
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 0;
+      overflow: hidden;
+    }
+    .header {
+      margin-left: 0;
+    }
+    .content {
+      margin-left: 0;
+    }
+    .header .menu-icon {
+      display: block;
+    }
+  }
