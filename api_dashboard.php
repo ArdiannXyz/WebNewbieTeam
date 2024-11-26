@@ -13,7 +13,7 @@ if (!$koneksi) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $tables = ['kelas', 'materi', 'tugas', 'siswa'];
+    $tables = ['kelas', 'materi', 'mapel', 'siswa'];
     $response = [];
     $error_flag = false;
 
@@ -51,6 +51,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     ]);
 }
 
-// Use the method from the Koneksi class to close the connection
 $koneksiObj->tutupKoneksi();
 ?>

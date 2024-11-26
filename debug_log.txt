@@ -1,0 +1,55 @@
+Array
+(
+    [jenis_materi] => www
+    [komentar] => asss
+    [id_kelas] => 0
+    [id_guru] => 1
+    [judul_materi] => mtk
+)
+Array
+(
+    [jenis_materi] => aaa
+    [komentar] => asep
+    [id_kelas] => 0
+    [id_guru] => 1
+    [judul_materi] => ipa
+)
+Array
+(
+    [jenis_materi] => www
+    [komentar] => aaa
+    [id_kelas] => 1
+    [id_guru] => 1
+    [judul_materi] => asepp
+)
+Array
+(
+    [success] => 1
+    [message] => Materi berhasil diupload.
+)
+Array
+(
+    [jenis_materi] => www
+    [komentar] => ucil
+    [id_kelas] => 1
+    [id_guru] => 1
+    [judul_materi] => Ipa
+)
+Array
+(
+    [success] => 1
+    [message] => Materi berhasil diupload.
+)
+Array
+(
+    [jenis_materi] => www
+    [komentar] => apalah
+    [id_kelas] => 1
+    [id_guru] => 1
+    [judul_materi] => matematika
+)
+Array
+(
+    [success] => 1
+    [message] => Materi berhasil diupload.
+)
