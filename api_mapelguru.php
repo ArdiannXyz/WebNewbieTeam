@@ -22,22 +22,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
-    $materiModel = []; // Ganti nama variabel dari "data" ke "materiModel"
+    $mapelModel = []; // Ganti nama variabel dari "data" ke "materiModel"
 
     if ($result->num_rows > 0) {
         // Jika data ditemukan
         while ($row = $result->fetch_assoc()) {
-            $materiModel[] = $row;
+            $mapelModel[] = $row;
         }
         echo json_encode([
             "status" => "success",
-            "materi_model" => $materiModel // Ganti "data" ke "materi_model"
+            "mapel_model" => $mapelModel // Ganti "data" ke "materi_model"
         ]);
     } else {
         // Jika tidak ada data
         echo json_encode([
             "status" => "success",
-            "materi_model" => [] // Ganti "data" ke "materi_model"
+            "mapel_model" => [] // Ganti "data" ke "materi_model"
         ]);
     }
 } else {

@@ -1,25 +1,19 @@
 <?php
 include 'koneksi.php';
+
 header('Content-Type: application/json');
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 // Membuat koneksi menggunakan kelas Koneksi
 $database = new Koneksi();
 $koneksi = $database->getKoneksi();
 
-// Periksa koneksi
-if (!$koneksi) {
-    die("Connection failed: " . mysqli_connect_error());
-}
-
+// Periksa metode permintaan
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    // Query untuk mendapatkan data kelas
-    $sql = "SELECT id_kelas, nama_kelas, tahun_ajaran, wali_kelas FROM kelas";
+    // Query untuk mendapatkan data dari tabel mapel
+    $sql = "SELECT judul_tugas FROM materi";
     $result = $koneksi->query($sql);
 
     if ($result === false) {
-        // Jika terjadi kesalahan pada query
         echo json_encode([
             "status" => "error",
             "message" => "SQL Error: " . $koneksi->error
@@ -27,22 +21,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
-    $kelasModel = array();
+    $materiModel = []; 
 
     if ($result->num_rows > 0) {
-        // Looping data hasil query
+        // Jika data ditemukan
         while ($row = $result->fetch_assoc()) {
-            $kelasModel[] = $row;
+            $materiModel[] = $row;
         }
         echo json_encode([
             "status" => "success",
-            "kelasModel" => $kelasModel
+            "materi_model" => $materiModel
         ]);
     } else {
         // Jika tidak ada data
         echo json_encode([
-            "status" => "error",
-            "message" => "Data tidak ditemukan"
+            "status" => "success",
+            "materi_model" => [] 
         ]);
     }
 } else {
@@ -53,6 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     ]);
 }
 
-// Menutup koneksi
-$koneksi->close();
+// Tutup koneksi
+$database->tutupKoneksi();
 ?>
