@@ -25,23 +25,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
-    $tugasModel = [];  // Array untuk menyimpan data tugas
+    $banktugasModel = [];  // Array untuk menyimpan data tugas
 
     // Periksa apakah ada data yang ditemukan
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
-            $tugasModel[] = $row;
+            $banktugasModel[] = $row;
         }
         // Mengirim data dalam format JSON
         echo json_encode([
             "status" => "success",
-            "tugas_model" => $tugasModel
+            "bank_tugas_model" => $banktugasModel
         ]);
     } else {
         // Jika tidak ada data ditemukan
         echo json_encode([
             "status" => "success",
-            "tugas_model" => []  // Mengembalikan array kosong jika tidak ada data
+            "bank_tugas_model" => []  // Mengembalikan array kosong jika tidak ada data
         ]);
     }
 } else {
@@ -55,3 +55,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 // Tutup koneksi database
 $database->tutupKoneksi();
 ?>
+
