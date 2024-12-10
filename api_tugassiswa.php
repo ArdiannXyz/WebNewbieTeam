@@ -20,22 +20,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
-    $tugasModel = []; 
+    $tugassiswaModel = []; 
 
     if ($result->num_rows > 0) {
         // Jika data ditemukan
         while ($row = $result->fetch_assoc()) {
-            $tugasModel[] = $row;
+            $tugassiswaModel[] = $row;
         }
         echo json_encode([
             "status" => "success",
-            "tugas_model" => $tugasModel
+            "tugas_siswa_model" => $tugassiswaModel
         ]);
     } else {
         // Jika tidak ada data
         echo json_encode([
             "status" => "success",
-            "tugas_model" => [] 
+            "tugas_siswa_model" => [] 
         ]);
     }
 } else {
@@ -49,4 +49,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 // Tutup koneksi
 $database->tutupKoneksi();
 ?>
-

@@ -3,13 +3,14 @@ include 'koneksi.php';
 
 header('Content-Type: application/json');
 
+// Membuat koneksi menggunakan kelas Koneksi
 $database = new Koneksi();
 $koneksi = $database->getKoneksi();
 
 // Periksa metode permintaan
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // Query untuk mendapatkan data dari tabel mapel
-    $sql = "SELECT deskripsi FROM materi";
+    $sql = "SELECT judul_tugas FROM materi";
     $result = $koneksi->query($sql);
 
     if ($result === false) {
@@ -20,22 +21,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
-    $tugasModel = []; 
+    $materisiswaModel = []; 
 
     if ($result->num_rows > 0) {
         // Jika data ditemukan
         while ($row = $result->fetch_assoc()) {
-            $tugasModel[] = $row;
+            $materisiswaModel[] = $row;
         }
         echo json_encode([
             "status" => "success",
-            "tugas_model" => $tugasModel
+            "materi_siswa_model" => $materisiswaModel
         ]);
     } else {
         // Jika tidak ada data
         echo json_encode([
             "status" => "success",
-            "tugas_model" => [] 
+            "materi_siswa_model" => [] 
         ]);
     }
 } else {
@@ -49,4 +50,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 // Tutup koneksi
 $database->tutupKoneksi();
 ?>
-

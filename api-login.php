@@ -1,23 +1,16 @@
 <?php
-// Memuat file koneksi
 include 'koneksi.php';
 
-// Membuat objek koneksi
 $db = new Koneksi();
 $koneksi = $db->getKoneksi();
 
-// Ambil data dari request
 $nama = isset($_GET['nama']) ? $_GET['nama'] : '';
 $password = isset($_GET['password']) ? $_GET['password'] : '';
 
 if (!empty($nama) && !empty($password)) {
-    // Membuat prepared statement
     $stmt = $koneksi->prepare("SELECT * FROM users WHERE nama = ?");
     if (!$stmt) {
-        die(json_encode([
-            "success" => false,
-            "message" => "Error prepare statement: " . $koneksi->error
-        ]));
+        die(json_encode(["success" => false, "message" => "Error prepare statement: " . $koneksi->error]));
     }
 
     $stmt->bind_param("s", $nama);
@@ -26,40 +19,25 @@ if (!empty($nama) && !empty($password)) {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-
-        // Verifikasi password
         if (password_verify($password, $user['password'])) {
             $response = [
                 "success" => true,
                 "message" => "Selamat Datang",
-                "role" => isset($user['role_user']) ? $user['role_user'] : null
+                "user_id" => $user['id'], // Mengembalikan user_id
+                "role" => $user['role_user']
             ];
         } else {
-            $response = [
-                "success" => false,
-                "message" => "Password salah",
-                "role" => null
-            ];
+            $response = ["success" => false, "message" => "Password salah"];
         }
     } else {
-        $response = [
-            "success" => false,
-            "message" => "Pengguna tidak ditemukan",
-            "role" => null
-        ];
+        $response = ["success" => false, "message" => "Pengguna tidak ditemukan"];
     }
 
     $stmt->close();
 } else {
-    $response = [
-        "success" => false,
-        "message" => "Ada data yang kosong",
-        "role" => null
-    ];
+    $response = ["success" => false, "message" => "Ada data yang kosong"];
 }
 
-// Tutup koneksi
 $db->tutupKoneksi();
-
-// Kirim respons JSON
 echo json_encode($response);
+?>
