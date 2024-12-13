@@ -8,9 +8,9 @@ $koneksi = $database->getKoneksi();
 
 // Periksa metode permintaan
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    // Query untuk mendapatkan data dari tabel mapel
-    $sql = "SELECT deskripsi FROM materi";
-    $result = $koneksi->query($sql);
+    // Query untuk mendapatkan data dari tabel materi
+    $sql = "SELECT id_tugas, judul_tugas, deskripsi FROM materi";
+    $result = $koneksi->query($sql);  // Eksekusi query dulu
 
     if ($result === false) {
         echo json_encode([
@@ -25,7 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if ($result->num_rows > 0) {
         // Jika data ditemukan
         while ($row = $result->fetch_assoc()) {
-            $tugasModel[] = $row;
+            $tugasModel[] = [
+                "id_tugas" => $row["id_tugas"],
+                "judul_tugas" => $row["judul_tugas"],
+                "deskripsi" => $row["deskripsi"]
+            ];
         }
         echo json_encode([
             "status" => "success",
@@ -35,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         // Jika tidak ada data
         echo json_encode([
             "status" => "success",
-            "tugas_model" => [] 
+            "tugas_model" => []
         ]);
     }
 } else {
@@ -48,5 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 // Tutup koneksi
 $database->tutupKoneksi();
+<<<<<<< Updated upstream
 ?>
 
+=======
+?>
+>>>>>>> Stashed changes

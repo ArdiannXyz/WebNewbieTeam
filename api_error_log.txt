@@ -1,0 +1,51 @@
+[2024-12-03 21:01:10] Received POST data: Array
+(
+    [materi_id] => -1
+    [id_kelas] => 0
+)
+
+[2024-12-03 21:01:10] API Error: Unknown column 'materi_id' in 'where clause'
+[2024-12-03 21:04:16] Received POST data: Array
+(
+    [id_materi] => 0
+    [id_kelas] => 0
+)
+
+[2024-12-03 21:04:16] API Error: Invalid materi_id
+[2024-12-03 21:09:07] Received POST data: Array
+(
+    [id_materi] => 0
+    [id_kelas] => 0
+)
+
+[2024-12-03 21:09:07] API Error: Unknown column 'id_materi' in 'where clause'
+[2024-12-03 21:12:39] Received POST data: Array
+(
+    [id_materi] => 0
+    [id_kelas] => 0
+)
+
+[2024-12-03 21:16:55] Received POST data: Array
+(
+    [id_materi] => 0
+    [id_kelas] => 0
+)
+
+[2024-12-03 21:20:14] Received POST data: Array
+(
+    [id_materi] => 0
+    [id_kelas] => 0
+)
+
+[2024-12-03 21:38:05] Received POST data: Array
+(
+    [id_tugas] => 0
+    [id_kelas] => 0
+)
+
+[2024-12-03 21:38:18] Received POST data: Array
+(
+    [id_tugas] => 0
+    [id_kelas] => 0
+)
+
