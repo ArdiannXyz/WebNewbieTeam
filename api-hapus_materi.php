@@ -1,7 +1,4 @@
 <?php
-
-//api-hapus_materi
-
 header('Content-Type: application/json');
 include 'koneksi.php';
 
@@ -28,15 +25,16 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     exit();
 }
 
-$id_tugas = isset($input['id_tugas']) ? intval($input['id_tugas']) : 0;
-error_log("ID Tugas received: " . $id_tugas);
+// Menggunakan id_materi sesuai dengan struktur database
+$id_materi = isset($input['id_materi']) ? intval($input['id_materi']) : 0;
+error_log("ID Materi received: " . $id_materi);
 
 // Validasi input
-if ($id_tugas <= 0) {
+if ($id_materi <= 0) {
     http_response_code(400);
     echo json_encode([
         'status' => 'error',
-        'error' => 'ID tidak valid',
+        'error' => 'ID materi tidak valid',
         'code' => 'INVALID_ID'
     ]);
     exit();
@@ -56,30 +54,37 @@ if (!$koneksi) {
     exit();
 }
 
-// Periksa keberadaan data sebelum dihapus
-$cekData = $koneksi->prepare("SELECT id_tugas FROM materi WHERE id_tugas = ?");
-$cekData->bind_param("i", $id_tugas);
-$cekData->execute();
-$result = $cekData->get_result();
-
-if ($result->num_rows == 0) {
-    http_response_code(404);
-    echo json_encode([
-        'status' => 'error',
-        'error' => 'Materi tidak ditemukan',
-        'code' => 'NOT_FOUND'
-    ]);
-    $cekData->close();
-    $koneksiObj->tutupKoneksi();
-    exit();
-}
-$cekData->close();
-
-// Hapus data
-$query = $koneksi->prepare("DELETE FROM materi WHERE id_tugas = ?");
-$query->bind_param("i", $id_tugas);
-
 try {
+    // Mulai transaksi
+    $koneksi->begin_transaction();
+
+    // Periksa keberadaan data sebelum dihapus
+    $cekData = $koneksi->prepare("SELECT id_materi, file_materi FROM materi WHERE id_materi = ?");
+    $cekData->bind_param("i", $id_materi);
+    $cekData->execute();
+    $result = $cekData->get_result();
+
+    if ($result->num_rows == 0) {
+        $koneksi->rollback();
+        http_response_code(404);
+        echo json_encode([
+            'status' => 'error',
+            'error' => 'Materi tidak ditemukan',
+            'code' => 'NOT_FOUND'
+        ]);
+        $cekData->close();
+        $koneksiObj->tutupKoneksi();
+        exit();
+    }
+
+    // Ambil informasi file materi jika ada
+    $row = $result->fetch_assoc();
+    $file_materi = $row['file_materi'];
+    $cekData->close();
+
+    // Delete the record instead of updating is_active
+    $query = $koneksi->prepare("DELETE FROM materi WHERE id_materi = ?");
+    $query->bind_param("i", $id_materi);
     $deleteResult = $query->execute();
     $affectedRows = $query->affected_rows;
     
@@ -87,25 +92,35 @@ try {
     error_log("Affected rows: " . $affectedRows);
     
     if ($deleteResult && $affectedRows > 0) {
+        // Commit transaksi jika berhasil
+        $koneksi->commit();
+
+        // Hapus file fisik jika ada
+        if ($file_materi && file_exists($file_materi)) {
+            unlink($file_materi);
+        }
+
         echo json_encode([
-            'status' => 'success',
-            'message' => 'Berhasil hapus Materi',
-            'id_tugas' => $id_tugas
+            'success' => true,
+            'message' => 'Berhasil menghapus materi',
+            'id_materi' => $id_materi
         ]);
     } else {
+        $koneksi->rollback();
         http_response_code(500);
         echo json_encode([
-            'status' => 'error',
-            'error' => 'Gagal hapus Materi',
+            'success' => false,
+            'message' => 'Gagal menghapus materi',
             'code' => 'DELETE_FAILED'
         ]);
     }
 } catch (Exception $e) {
+    $koneksi->rollback();
     error_log("Delete error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
-        'status' => 'error',
-        'error' => $e->getMessage(),
+        'success' => false,
+        'message' => $e->getMessage(),
         'code' => 'SERVER_ERROR'
     ]);
 }

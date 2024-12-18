@@ -1,9 +1,13 @@
 <?php
+declare(strict_types=1);
 
-//api-get_materi_by_id.php
+// Define debug mode
+define('DEBUG_MODE', true); // Set to false in production
 
-
+// Set headers
 header('Content-Type: application/json');
+http_response_code(200); // Default response code
+
 include 'koneksi.php';
 
 // Response array dengan tambahan field error untuk debugging
@@ -16,12 +20,12 @@ $response = array(
 
 try {
     // Validasi input ID materi
-    if (!isset($_GET['id_tugas']) || empty($_GET['id_tugas'])) {
+    if (!isset($_GET['id_materi']) || empty($_GET['id_materi'])) {
         throw new Exception('ID Materi tidak valid');
     }
 
     // Ambil ID materi dari parameter dan validasi
-    $id_materi = filter_var($_GET['id_tugas'], FILTER_VALIDATE_INT);
+    $id_materi = filter_var($_GET['id_materi'], FILTER_VALIDATE_INT);
     if ($id_materi === false) {
         throw new Exception('ID Materi harus berupa angka');
     }
@@ -36,20 +40,29 @@ try {
 
     // Query untuk mengambil detail materi berdasarkan ID
     $query = "SELECT 
-                m.id_tugas, 
-                m.judul_tugas, 
-                m.deskripsi as keterangan,  
-                m.jenis_materi, 
-                m.tanggal_dibuat,
-                m.deadline,
+                m.id_materi,
+                m.judul_materi,
+                m.deskripsi,
+                m.file_materi,
+                m.is_active,
+                m.created_at,
+                m.updated_at,
+                k.id_kelas,
                 k.nama_kelas,
-                k.id_kelas
+                mp.id_mapel,
+                mp.nama_mapel,
+                u.nama as nama_guru
               FROM 
                 materi m
               JOIN 
                 kelas k ON m.id_kelas = k.id_kelas
+              JOIN 
+                mapel mp ON m.id_mapel = mp.id_mapel
+              JOIN 
+                users u ON m.id_guru = u.id
               WHERE 
-                m.id_tugas = ?";
+                m.id_materi = ? 
+                AND m.is_active = TRUE";
 
     // Persiapkan statement
     $stmt = mysqli_prepare($koneksi, $query);
@@ -58,9 +71,7 @@ try {
     }
 
     // Bind parameter
-    if (!mysqli_stmt_bind_param($stmt, "i", $id_materi)) {
-        throw new Exception('Gagal binding parameter: ' . mysqli_stmt_error($stmt));
-    }
+    mysqli_stmt_bind_param($stmt, "i", $id_materi);
     
     // Eksekusi statement
     if (!mysqli_stmt_execute($stmt)) {
@@ -78,20 +89,26 @@ try {
         // Ambil data
         $row = mysqli_fetch_assoc($result);
         
-        // Konversi format tanggal jika perlu
-        $tanggal_dibuat = date('Y-m-d H:i:s', strtotime($row['tanggal_dibuat']));
-        $deadline = $row['deadline'] ? date('Y-m-d H:i:s', strtotime($row['deadline'])) : null;
-        
         // Siapkan data materi
         $materiData = array(
-            "id_tugas" => (int)$row['id_tugas'],
-            "judul_tugas" => $row['judul_tugas'],
-            "keterangan" => $row['keterangan'],
-            "jenis_materi" => $row['jenis_materi'],
-            "tanggal_dibuat" => $tanggal_dibuat,
-            "deadline" => $deadline,
-            "nama_kelas" => $row['nama_kelas'],
-            "id_kelas" => (int)$row['id_kelas']
+            "id_materi" => (int)$row['id_materi'],
+            "judul_materi" => $row['judul_materi'],
+            "deskripsi" => $row['deskripsi'],
+            "file_materi" => $row['file_materi'],
+            "is_active" => (bool)$row['is_active'],
+            "created_at" => $row['created_at'],
+            "updated_at" => $row['updated_at'],
+            "kelas" => array(
+                "id_kelas" => (int)$row['id_kelas'],
+                "nama_kelas" => $row['nama_kelas']
+            ),
+            "mapel" => array(
+                "id_mapel" => (int)$row['id_mapel'],
+                "nama_mapel" => $row['nama_mapel']
+            ),
+            "guru" => array(
+                "nama" => $row['nama_guru']
+            )
         );
         
         // Set response sukses
@@ -99,14 +116,17 @@ try {
         $response['message'] = 'Berhasil mengambil data materi';
         $response['data'] = $materiData;
     } else {
-        throw new Exception('Materi tidak ditemukan');
+        throw new Exception('Materi tidak ditemukan atau tidak aktif');
     }
     
 } catch (Exception $e) {
+    // Set HTTP response code
+    http_response_code(404);
+    
     // Tangkap semua error dan masukkan ke response
     $response['success'] = false;
     $response['message'] = $e->getMessage();
-    $response['error'] = $e->getTrace();
+    $response['error'] = DEBUG_MODE ? $e->getTrace() : null;
 } finally {
     // Tutup statement jika ada
     if (isset($stmt) && $stmt) {
@@ -122,4 +142,3 @@ try {
     echo json_encode($response, JSON_PRETTY_PRINT);
     exit();
 }
-?>

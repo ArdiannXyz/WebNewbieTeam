@@ -1,124 +1,167 @@
 <?php
-
-//api-get_tugas_by_id.php
-
-
 header('Content-Type: application/json');
 include 'koneksi.php';
 
-// Response array dengan tambahan field error untuk debugging
-$response = array(
+// Response array initialization
+$response = [
     "success" => false,
     "message" => "",
     "data" => null,
     "error" => null
-);
+];
 
 try {
-    // Validasi input ID materi
+    // Validate input ID tugas
     if (!isset($_GET['id_tugas']) || empty($_GET['id_tugas'])) {
-        throw new Exception('ID Materi tidak valid');
+        throw new Exception('ID Tugas is required');
     }
 
-    // Ambil ID materi dari parameter dan validasi
-    $id_materi = filter_var($_GET['id_tugas'], FILTER_VALIDATE_INT);
-    if ($id_materi === false) {
-        throw new Exception('ID Materi harus berupa angka');
+    $id_tugas = filter_var($_GET['id_tugas'], FILTER_VALIDATE_INT);
+    if ($id_tugas === false) {
+        throw new Exception('ID Tugas must be a number');
     }
 
-    // Buat objek koneksi
+    // Create database connection
     $koneksiObj = new Koneksi();
     $koneksi = $koneksiObj->getKoneksi();
 
     if (!$koneksi) {
-        throw new Exception('Koneksi database gagal: ' . mysqli_connect_error());
+        throw new Exception('Database connection failed: ' . mysqli_connect_error());
     }
 
-    // Query untuk mengambil detail materi berdasarkan ID
+    // Query to get tugas details based on ID
     $query = "SELECT 
-                m.id_tugas, 
-                m.judul_tugas, 
-                m.deskripsi as keterangan,  
-                m.jenis_materi, 
-                m.tanggal_dibuat,
-                m.deadline,
+                t.id_tugas,
+                t.judul_tugas,
+                t.deskripsi,
+                t.file_tugas,
+                t.deadline,
+                t.is_active,
+                t.created_at,
+                t.updated_at,
+                k.id_kelas,
                 k.nama_kelas,
-                k.id_kelas
+                m.id_mapel,
+                m.nama_mapel,
+                u.id as guru_id,
+                u.nama as nama_guru
               FROM 
-                materi m
+                tugas t
               JOIN 
-                kelas k ON m.id_kelas = k.id_kelas
+                kelas k ON t.id_kelas = k.id_kelas
+              JOIN
+                mapel m ON t.id_mapel = m.id_mapel
+              JOIN
+                users u ON t.id_guru = u.id
               WHERE 
-                m.id_tugas = ?";
+                t.id_tugas = ? AND t.is_active = TRUE";
 
-    // Persiapkan statement
+    // Prepare statement
     $stmt = mysqli_prepare($koneksi, $query);
     if (!$stmt) {
-        throw new Exception('Gagal mempersiapkan query: ' . mysqli_error($koneksi));
+        throw new Exception('Failed to prepare query: ' . mysqli_error($koneksi));
     }
 
     // Bind parameter
-    if (!mysqli_stmt_bind_param($stmt, "i", $id_materi)) {
-        throw new Exception('Gagal binding parameter: ' . mysqli_stmt_error($stmt));
+    if (!mysqli_stmt_bind_param($stmt, "i", $id_tugas)) {
+        throw new Exception('Failed to bind parameter: ' . mysqli_stmt_error($stmt));
     }
     
-    // Eksekusi statement
+    // Execute statement
     if (!mysqli_stmt_execute($stmt)) {
-        throw new Exception('Gagal eksekusi query: ' . mysqli_stmt_error($stmt));
+        throw new Exception('Failed to execute query: ' . mysqli_stmt_error($stmt));
     }
     
-    // Ambil hasil
+    // Get result
     $result = mysqli_stmt_get_result($stmt);
     if (!$result) {
-        throw new Exception('Gagal mengambil hasil: ' . mysqli_stmt_error($stmt));
+        throw new Exception('Failed to get result: ' . mysqli_stmt_error($stmt));
     }
     
-    // Cek apakah ada data
+    // Check if data exists
     if (mysqli_num_rows($result) > 0) {
-        // Ambil data
         $row = mysqli_fetch_assoc($result);
         
-        // Konversi format tanggal jika perlu
-        $tanggal_dibuat = date('Y-m-d H:i:s', strtotime($row['tanggal_dibuat']));
-        $deadline = $row['deadline'] ? date('Y-m-d H:i:s', strtotime($row['deadline'])) : null;
+        // Format dates
+        $created_at = date('Y-m-d H:i:s', strtotime($row['created_at']));
+        $updated_at = date('Y-m-d H:i:s', strtotime($row['updated_at']));
+        $deadline = date('Y-m-d H:i:s', strtotime($row['deadline']));
         
-        // Siapkan data materi
-        $materiData = array(
+        // Get submission statistics
+        $stats_query = "SELECT 
+                         COUNT(*) as total_submissions,
+                         SUM(CASE WHEN status = 'tepat_waktu' THEN 1 ELSE 0 END) as on_time,
+                         SUM(CASE WHEN status = 'terlambat' THEN 1 ELSE 0 END) as late,
+                         SUM(CASE WHEN status = 'belum_mengumpulkan' THEN 1 ELSE 0 END) as not_submitted
+                       FROM pengumpulan
+                       WHERE id_tugas = ?";
+        
+        $stats_stmt = mysqli_prepare($koneksi, $stats_query);
+        mysqli_stmt_bind_param($stats_stmt, "i", $id_tugas);
+        mysqli_stmt_execute($stats_stmt);
+        $stats_result = mysqli_stmt_get_result($stats_stmt);
+        $stats = mysqli_fetch_assoc($stats_result);
+        
+        // Prepare tugas data
+        $tugasData = [
             "id_tugas" => (int)$row['id_tugas'],
             "judul_tugas" => $row['judul_tugas'],
-            "keterangan" => $row['keterangan'],
-            "jenis_materi" => $row['jenis_materi'],
-            "tanggal_dibuat" => $tanggal_dibuat,
+            "deskripsi" => $row['deskripsi'],
+            "file_tugas" => $row['file_tugas'],
             "deadline" => $deadline,
-            "nama_kelas" => $row['nama_kelas'],
-            "id_kelas" => (int)$row['id_kelas']
-        );
+            "is_active" => (bool)$row['is_active'],
+            "created_at" => $created_at,
+            "updated_at" => $updated_at,
+            "kelas" => [
+                "id_kelas" => (int)$row['id_kelas'],
+                "nama_kelas" => $row['nama_kelas']
+            ],
+            "mapel" => [
+                "id_mapel" => (int)$row['id_mapel'],
+                "nama_mapel" => $row['nama_mapel']
+            ],
+            "guru" => [
+                "id" => (int)$row['guru_id'],
+                "nama" => $row['nama_guru']
+            ],
+            "statistics" => [
+                "total_submissions" => (int)$stats['total_submissions'],
+                "on_time" => (int)$stats['on_time'],
+                "late" => (int)$stats['late'],
+                "not_submitted" => (int)$stats['not_submitted']
+            ]
+        ];
         
-        // Set response sukses
+        // Set success response
         $response['success'] = true;
-        $response['message'] = 'Berhasil mengambil data materi';
-        $response['data'] = $materiData;
+        $response['message'] = 'Successfully retrieved tugas data';
+        $response['data'] = $tugasData;
     } else {
-        throw new Exception('Materi tidak ditemukan');
+        throw new Exception('Tugas not found or inactive');
     }
     
 } catch (Exception $e) {
-    // Tangkap semua error dan masukkan ke response
+    // Catch all errors and add to response
     $response['success'] = false;
     $response['message'] = $e->getMessage();
-    $response['error'] = $e->getTrace();
+    if (getenv('ENVIRONMENT') === 'development') {
+        $response['error'] = $e->getTrace();
+    }
 } finally {
-    // Tutup statement jika ada
+    // Close statement if exists
+    if (isset($stats_stmt) && $stats_stmt) {
+        mysqli_stmt_close($stats_stmt);
+    }
     if (isset($stmt) && $stmt) {
         mysqli_stmt_close($stmt);
     }
     
-    // Tutup koneksi jika ada
+    // Close connection if exists
     if (isset($koneksiObj)) {
         $koneksiObj->tutupKoneksi();
     }
     
-    // Kembalikan response dalam format JSON
+    // Return response in JSON format
     echo json_encode($response, JSON_PRETTY_PRINT);
     exit();
 }

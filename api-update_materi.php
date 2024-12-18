@@ -2,147 +2,124 @@
 header('Content-Type: application/json');
 include 'koneksi.php';
 
-// Fungsi validasi input
-function validateInput($input) {
-    return trim($input) !== '';
-}
-
-// Buat instansi dari kelas Koneksi
-$koneksiObj = new Koneksi();
-$koneksi = $koneksiObj->getKoneksi(); // Mendapatkan koneksi
+// Enable error logging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 try {
-    // Ambil dan filter input
-    $id_tugas = filter_input(INPUT_POST, 'id_tugas', FILTER_VALIDATE_INT);
-    $id_guru = filter_input(INPUT_POST, 'id_guru', FILTER_VALIDATE_INT);
-    $jenis_materi = filter_input(INPUT_POST, 'jenis_materi', FILTER_SANITIZE_STRING);
-    $judul_tugas = filter_input(INPUT_POST, 'judul_tugas', FILTER_SANITIZE_STRING);
-    $deskripsi = filter_input(INPUT_POST, 'deskripsi', FILTER_SANITIZE_STRING);
-    $id_kelas = filter_input(INPUT_POST, 'id_kelas', FILTER_VALIDATE_INT);
-    $deadline = filter_input(INPUT_POST, 'deadline', FILTER_SANITIZE_STRING);
-    $video_url = filter_input(INPUT_POST, 'video_url', FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED);
+    $koneksiObj = new Koneksi();
+    $koneksi = $koneksiObj->getKoneksi();
 
-    // Log input yang diterima untuk debugging
-    error_log("Received POST data: " . print_r($_POST, true));
+    // Get raw post data for debugging
+    $raw_post = file_get_contents('php://input');
+    error_log("Raw POST data: " . $raw_post);
+    error_log("POST variables: " . print_r($_POST, true));
+    error_log("FILES variables: " . print_r($_FILES, true));
 
-    // Validasi input yang lebih komprehensif
-    $errors = [];
+    // Validate and sanitize input
+    $id_materi = isset($_POST['id_materi']) ? filter_var($_POST['id_materi'], FILTER_VALIDATE_INT) : null;
+    $id_mapel = isset($_POST['id_mapel']) ? filter_var($_POST['id_mapel'], FILTER_VALIDATE_INT) : null;
+    $id_kelas = isset($_POST['id_kelas']) ? filter_var($_POST['id_kelas'], FILTER_VALIDATE_INT) : null;
+    $id_guru = isset($_POST['id_guru']) ? filter_var($_POST['id_guru'], FILTER_VALIDATE_INT) : null;
+    $judul_materi = isset($_POST['judul_materi']) ? filter_var($_POST['judul_materi'], FILTER_SANITIZE_STRING) : null;
+    $deskripsi = isset($_POST['deskripsi']) ? filter_var($_POST['deskripsi'], FILTER_SANITIZE_STRING) : null;
 
-    if ($id_tugas === false || $id_tugas === null || $id_tugas <= 0) {
-        $errors[] = "ID Tugas tidak valid";
+    // Log received values
+    error_log("Received values: " . json_encode([
+        'id_materi' => $id_materi,
+        'id_mapel' => $id_mapel,
+        'id_kelas' => $id_kelas,
+        'id_guru' => $id_guru,
+        'judul_materi' => $judul_materi,
+        'deskripsi' => $deskripsi
+    ]));
+
+    // Validate required fields
+    if (!$id_materi || !$id_mapel || !$id_kelas || !$id_guru || !$judul_materi) {
+        throw new Exception('Semua field wajib diisi. ID Guru: ' . $id_guru);
     }
 
-    if ($id_guru === false || $id_guru === null || $id_guru <= 0) {
-        $errors[] = "ID Guru tidak valid";
+    // Verify guru exists
+    $stmt = $koneksi->prepare("SELECT id_guru FROM guru WHERE id_guru = ?");
+    $stmt->bind_param("i", $id_guru);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        throw new Exception('ID Guru tidak ditemukan: ' . $id_guru);
     }
 
-    if (empty($jenis_materi)) {
-        $errors[] = "Jenis materi harus diisi";
-    }
-
-    if (empty($judul_tugas)) {
-        $errors[] = "Judul tugas harus diisi";
-    }
-
-    if ($id_kelas === false || $id_kelas === null || $id_kelas <= 0) {
-        $errors[] = "ID Kelas tidak valid";
-    }
-
-    // Validasi deadline (opsional: sesuaikan format yang diinginkan)
-    if (!empty($deadline)) {
-        $deadline_time = strtotime($deadline);
-        if ($deadline_time === false) {
-            $errors[] = "Format deadline tidak valid";
+    // Handle file upload if exists
+    $file_materi = null;
+    if (isset($_FILES['file']) && $_FILES['file']['error'] == 0) {
+        $upload_dir = 'uploads/materi/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
         }
-    }
 
-    // Jika ada error, kembalikan response error
-    if (!empty($errors)) {
-        http_response_code(400);
-        echo json_encode([
-            'success' => false,
-            'errors' => $errors
-        ]);
-        exit();
-    }
+        $file_name = time() . '_' . $_FILES['file']['name'];
+        $file_path = $upload_dir . $file_name;
 
-    // Cek duplikasi judul tugas (kecuali data saat ini)
-    $cek_duplikasi = $koneksi->prepare("SELECT * FROM materi WHERE judul_tugas = ? AND id_tugas != ?");
-    $cek_duplikasi->bind_param("si", $judul_tugas, $id_tugas);
-    $cek_duplikasi->execute();
-    $result_duplikasi = $cek_duplikasi->get_result();
-
-    if ($result_duplikasi->num_rows > 0) {
-        http_response_code(400);
-        echo json_encode([
-            'success' => false,
-            'message' => 'Judul tugas sudah terdaftar'
-        ]);
-        exit();
-    }
-
-    // Persiapkan query update
-    $query = $koneksi->prepare("UPDATE materi SET 
-        id_guru = ?, 
-        jenis_materi = ?, 
-        judul_tugas = ?, 
-        deskripsi = ?, 
-        id_kelas = ?, 
-        deadline = ?, 
-        video_url = ? 
-        WHERE id_tugas = ?");
-
-    $query->bind_param(
-        "issssssi", 
-        $id_guru, 
-        $jenis_materi, 
-        $judul_tugas, 
-        $deskripsi, 
-        $id_kelas, 
-        $deadline, 
-        $video_url, 
-        $id_tugas
-    );
-
-    // Eksekusi query
-    if ($query->execute()) {
-        // Cek apakah ada baris yang ter-update
-        if ($query->affected_rows > 0) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Berhasil update materi',
-                'updated_rows' => $query->affected_rows
-            ]);
+        if (move_uploaded_file($_FILES['file']['tmp_name'], $file_path)) {
+            $file_materi = $file_path;
         } else {
-            http_response_code(404);
-            echo json_encode([
-                'success' => false,
-                'message' => 'Tidak ada data yang diupdate, mungkin ID tidak ditemukan'
-            ]);
+            throw new Exception('Gagal upload file');
         }
-    } else {
-        // Error eksekusi query
-        http_response_code(500);
-        error_log("Update Error: " . $query->error);
+    }
+
+    // Start transaction
+    $koneksi->begin_transaction();
+
+    // Build update query
+    $query = "UPDATE materi SET 
+        id_mapel = ?,
+        id_kelas = ?,
+        id_guru = ?,
+        judul_materi = ?,
+        deskripsi = ?";
+    
+    $params = [$id_mapel, $id_kelas, $id_guru, $judul_materi, $deskripsi];
+    $types = "iiiss";
+
+    if ($file_materi) {
+        $query .= ", file_materi = ?";
+        $params[] = $file_materi;
+        $types .= "s";
+    }
+
+    $query .= " WHERE id_materi = ?";
+    $params[] = $id_materi;
+    $types .= "i";
+
+    $stmt = $koneksi->prepare($query);
+    $stmt->bind_param($types, ...$params);
+    
+    if ($stmt->execute()) {
+        $koneksi->commit();
         echo json_encode([
-            'success' => false,
-            'message' => 'Gagal update materi',
-            'error' => $query->error
+            'success' => true,
+            'message' => 'Berhasil update materi'
         ]);
+    } else {
+        throw new Exception('Gagal update materi: ' . $stmt->error);
     }
 
 } catch (Exception $e) {
-    // Tangani exception
+    if (isset($koneksi)) {
+        $koneksi->rollback();
+    }
+    error_log("Error in update_materi.php: " . $e->getMessage());
     http_response_code(500);
-    error_log("Exception: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Terjadi kesalahan',
-        'error' => $e->getMessage()
+        'message' => $e->getMessage()
     ]);
 } finally {
-    // Tutup koneksi
-    $koneksiObj->tutupKoneksi();
+    if (isset($stmt)) {
+        $stmt->close();
+    }
+    if (isset($koneksiObj)) {
+        $koneksiObj->tutupKoneksi();
+    }
 }
-exit();
 ?>
