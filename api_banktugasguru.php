@@ -36,6 +36,7 @@ try {
     $id_kelas = filter_var($_GET['id_kelas'] ?? null, FILTER_VALIDATE_INT);
     $id_mapel = filter_var($_GET['id_mapel'] ?? null, FILTER_VALIDATE_INT);
     $id_tugas = filter_var($_GET['id_tugas'] ?? null, FILTER_VALIDATE_INT);
+    $tahun_ajaran = filter_var($_GET['tahun_ajaran'] ?? null, FILTER_SANITIZE_STRING);
 
     // Query dasar dengan JOIN yang diperlukan
     $sql = "SELECT 
@@ -54,8 +55,12 @@ try {
             u_siswa.email as email_siswa,
             ds.nisn,
             k.nama_kelas,
+            k.tahun_ajaran,
+            mp.kode_mapel,
             mp.nama_mapel,
-            u_guru.nama as nama_guru
+            u_guru.nama as nama_guru,
+            u_guru.email as email_guru,
+            dg.nip as nip_guru
         FROM pengumpulan p
         JOIN tugas t ON p.id_tugas = t.id_tugas
         JOIN users u_siswa ON p.id_siswa = u_siswa.id
@@ -63,6 +68,7 @@ try {
         JOIN kelas k ON ds.id_kelas = k.id_kelas
         JOIN mapel mp ON t.id_mapel = mp.id_mapel
         JOIN users u_guru ON t.id_guru = u_guru.id
+        JOIN detail_guru dg ON u_guru.id = dg.user_id
         WHERE t.is_active = TRUE";
 
     $params = [];
@@ -88,6 +94,11 @@ try {
         $sql .= " AND t.id_tugas = ?";
         $params[] = $id_tugas;
         $types .= "i";
+    }
+    if ($tahun_ajaran !== false && $tahun_ajaran !== null) {
+        $sql .= " AND k.tahun_ajaran = ?";
+        $params[] = $tahun_ajaran;
+        $types .= "s";
     }
 
     $sql .= " ORDER BY t.deadline DESC, p.created_at DESC";
@@ -149,9 +160,19 @@ try {
                     'komentar' => $row['komentar'],
                     'keterlambatan' => $keterlambatan
                 ],
-                'kelas' => $row['nama_kelas'],
-                'mapel' => $row['nama_mapel'],
-                'guru' => $row['nama_guru']
+                'kelas' => [
+                    'nama' => $row['nama_kelas'],
+                    'tahun_ajaran' => $row['tahun_ajaran']
+                ],
+                'mapel' => [
+                    'kode' => $row['kode_mapel'],
+                    'nama' => $row['nama_mapel']
+                ],
+                'guru' => [
+                    'nama' => $row['nama_guru'],
+                    'email' => $row['email_guru'],
+                    'nip' => $row['nip_guru']
+                ]
             ];
         } catch (Exception $e) {
             // Log error but continue processing other records
@@ -189,3 +210,4 @@ try {
         $database->tutupKoneksi();
     }
 }
+
