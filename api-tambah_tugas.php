@@ -12,14 +12,14 @@ try {
 
     // Validasi method request
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Method not allowed');
+        throw new Exception('Method not allowed', 405);
     }
 
     // Validasi input yang diperlukan
     $required_fields = ['id_guru', 'id_mapel', 'id_kelas', 'judul_tugas', 'deskripsi', 'deadline'];
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty($_POST[$field])) {
-            throw new Exception("Field $field harus diisi");
+            throw new Exception("Field $field harus diisi", 400);
         }
     }
 
@@ -34,16 +34,31 @@ try {
     // Validasi format tanggal deadline
     $deadline_timestamp = strtotime($deadline);
     if ($deadline_timestamp === false) {
-        throw new Exception('Format deadline tidak valid');
+        throw new Exception('Format deadline tidak valid', 400);
     }
     $deadline_formatted = date('Y-m-d H:i:s', $deadline_timestamp);
+
+    // Validasi guru mengajar di kelas dan mapel tersebut (sesuai dengan trigger trg_validate_teacher_class)
+    $stmt = $koneksi->prepare("
+        SELECT COUNT(*) as is_teaching 
+        FROM kelas_mapel 
+        WHERE id_guru = ? AND id_kelas = ? AND id_mapel = ?
+    ");
+    $stmt->bind_param("iii", $id_guru, $id_kelas, $id_mapel);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    
+    if ($row['is_teaching'] == 0) {
+        throw new Exception('Guru tidak mengajar mata pelajaran ini di kelas tersebut', 403);
+    }
 
     // Handle file upload jika ada
     $file_tugas = null;
     if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
         // Validasi ukuran file (maksimal 10MB)
         if ($_FILES['file']['size'] > 10 * 1024 * 1024) {
-            throw new Exception('Ukuran file terlalu besar (maksimal 10MB)');
+            throw new Exception('Ukuran file terlalu besar (maksimal 10MB)', 400);
         }
 
         // Validasi tipe file
@@ -51,7 +66,7 @@ try {
         $file_extension = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
         
         if (!in_array($file_extension, $allowed_types)) {
-            throw new Exception('Tipe file tidak diizinkan');
+            throw new Exception('Tipe file tidak diizinkan', 400);
         }
 
         // Buat direktori upload jika belum ada
@@ -61,45 +76,21 @@ try {
         }
 
         // Generate nama file unik
+        $original_filename = $_FILES['file']['name'];
         $file_name = uniqid() . '_' . date('Ymd_His') . '.' . $file_extension;
         $file_path = $upload_dir . $file_name;
 
         // Pindahkan file
         if (!move_uploaded_file($_FILES['file']['tmp_name'], $file_path)) {
-            throw new Exception('Gagal mengupload file');
+            throw new Exception('Gagal mengupload file', 500);
         }
 
         $file_tugas = $file_path;
     }
 
-    // Validasi relasi data
-    // Cek apakah guru ada
-    $stmt = $koneksi->prepare("SELECT id FROM users WHERE id = ? AND role = 'guru'");
-    $stmt->bind_param("i", $id_guru);
-    $stmt->execute();
-    if ($stmt->get_result()->num_rows === 0) {
-        throw new Exception('ID Guru tidak valid');
-    }
-
-    // Cek apakah kelas ada
-    $stmt = $koneksi->prepare("SELECT id_kelas FROM kelas WHERE id_kelas = ?");
-    $stmt->bind_param("i", $id_kelas);
-    $stmt->execute();
-    if ($stmt->get_result()->num_rows === 0) {
-        throw new Exception('ID Kelas tidak valid');
-    }
-
-    // Cek apakah mapel ada
-    $stmt = $koneksi->prepare("SELECT id_mapel FROM mapel WHERE id_mapel = ?");
-    $stmt->bind_param("i", $id_mapel);
-    $stmt->execute();
-    if ($stmt->get_result()->num_rows === 0) {
-        throw new Exception('ID Mapel tidak valid');
-    }
-
-    // Siapkan query insert
+    // Insert tugas baru
     $query = "INSERT INTO tugas (id_guru, id_mapel, id_kelas, judul_tugas, deskripsi, file_tugas, deadline, is_active) 
-              VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)";
+              VALUES (?, ?, ?, ?, ?, ?, ?, 1)";
     
     $stmt = $koneksi->prepare($query);
     $stmt->bind_param("iiissss", 
@@ -112,38 +103,30 @@ try {
         $deadline_formatted
     );
 
-    // Eksekusi query
     if (!$stmt->execute()) {
-        throw new Exception('Gagal menyimpan tugas: ' . $stmt->error);
+        throw new Exception('Gagal menyimpan tugas: ' . $stmt->error, 500);
     }
 
-    // Dapatkan ID tugas yang baru dibuat
     $id_tugas = $stmt->insert_id;
 
-    // Buat record pengumpulan untuk setiap siswa di kelas tersebut
-    $query_siswa = "INSERT INTO pengumpulan (id_tugas, id_siswa, status) 
-                   SELECT ?, ds.user_id, 'belum_mengumpulkan'
-                   FROM detail_siswa ds
-                   WHERE ds.id_kelas = ?";
-    
-    $stmt_pengumpulan = $koneksi->prepare($query_siswa);
-    $stmt_pengumpulan->bind_param("ii", $id_tugas, $id_kelas);
-    
-    if (!$stmt_pengumpulan->execute()) {
-        throw new Exception('Gagal membuat record pengumpulan: ' . $stmt_pengumpulan->error);
-    }
+    // Trigger trg_create_submission_records akan otomatis membuat record pengumpulan
 
     // Commit transaksi
     $koneksi->commit();
 
     // Kirim response sukses
     echo json_encode([
-        'success' => true,
-        'message' => 'Tugas berhasil ditambahkan',
+        'status' => 'sukses',
+        'pesan' => 'Tugas berhasil ditambahkan',
         'data' => [
             'id_tugas' => $id_tugas,
             'judul_tugas' => $judul_tugas,
-            'file_tugas' => $file_tugas
+            'deskripsi' => $deskripsi,
+            'deadline' => $deadline_formatted,
+            'file_tugas' => $file_tugas,
+            'id_mapel' => $id_mapel,
+            'id_kelas' => $id_kelas,
+            'id_guru' => $id_guru
         ]
     ]);
 
@@ -159,10 +142,12 @@ try {
     }
 
     // Kirim response error
-    http_response_code(500);
+    $http_code = $e->getCode() ?: 500;
+    http_response_code($http_code);
+    
     echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
+        'status' => 'gagal',
+        'pesan' => $e->getMessage()
     ]);
 
 } finally {
@@ -171,4 +156,3 @@ try {
         $koneksiObj->tutupKoneksi();
     }
 }
-?>

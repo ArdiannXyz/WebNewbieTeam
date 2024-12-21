@@ -8,9 +8,21 @@ $koneksi = $db->getKoneksi();
 $id_user = isset($_GET['user_id']) ? $_GET['user_id'] : '';
 
 if (!empty($id_user)) {
-    $stmt = $koneksi->prepare("SELECT nama, nisn FROM siswa WHERE id_user = ?");
+    // Query yang menggabungkan tabel users dan detail_siswa
+    $sql = "SELECT u.id, u.nama, u.email, ds.nisn, ds.telp, k.nama_kelas 
+            FROM users u 
+            JOIN detail_siswa ds ON u.id = ds.user_id 
+            LEFT JOIN kelas k ON ds.id_kelas = k.id_kelas 
+            WHERE u.id = ? AND u.role = 'siswa' AND u.is_active = 1";
+            
+    $stmt = $koneksi->prepare($sql);
     if (!$stmt) {
-        die(json_encode(["success" => false, "message" => "Error prepare statement: " . $koneksi->error]));
+        http_response_code(500);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Error prepare statement: " . $koneksi->error
+        ]);
+        exit;
     }
 
     $stmt->bind_param("i", $id_user);
@@ -19,13 +31,39 @@ if (!empty($id_user)) {
 
     if ($result->num_rows > 0) {
         $siswa = $result->fetch_assoc();
-        $response = ["success" => true, "message" => "Data siswa ditemukan", "data" => $siswa];
+        
+        // Menyusun data respons
+        $response = [
+            "status" => "success",
+            "message" => "Data siswa ditemukan",
+            "data" => [
+                "id" => $siswa['id'],
+                "nama" => $siswa['nama'],
+                "email" => $siswa['email'],
+                "nisn" => $siswa['nisn'],
+                "telp" => $siswa['telp'],
+                "kelas" => $siswa['nama_kelas']
+            ]
+        ];
+        
+        http_response_code(200);
     } else {
-        $response = ["success" => false, "message" => "Siswa tidak ditemukan"];
+        http_response_code(404);
+        $response = [
+            "status" => "error",
+            "message" => "Siswa tidak ditemukan atau tidak aktif"
+        ];
     }
 
     echo json_encode($response);
+    $stmt->close();
 } else {
-    echo json_encode(["success" => false, "message" => "ID User tidak diberikan"]);
+    http_response_code(400);
+    echo json_encode([
+        "status" => "error",
+        "message" => "ID User tidak diberikan"
+    ]);
 }
+
+$db->tutupKoneksi();
 ?>

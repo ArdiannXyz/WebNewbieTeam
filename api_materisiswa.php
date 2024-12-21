@@ -9,11 +9,27 @@ $koneksi = $database->getKoneksi();
 
 // Periksa metode permintaan
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    // Query untuk mendapatkan data dari tabel mapel
-    $sql = "SELECT judul_tugas FROM materi";
+    // Query untuk mendapatkan data materi dengan informasi terkait
+    $sql = "SELECT 
+                m.id_materi,
+                m.judul_materi,
+                m.deskripsi,
+                m.file_materi,
+                m.original_filename,
+                mp.nama_mapel,
+                k.nama_kelas,
+                u.nama as nama_guru
+            FROM materi m
+            JOIN mapel mp ON m.id_mapel = mp.id_mapel
+            JOIN kelas k ON m.id_kelas = k.id_kelas
+            JOIN users u ON m.id_guru = u.id
+            WHERE m.is_active = 1
+            ORDER BY m.created_at DESC";
+            
     $result = $koneksi->query($sql);
 
     if ($result === false) {
+        http_response_code(500);
         echo json_encode([
             "status" => "error",
             "message" => "SQL Error: " . $koneksi->error
@@ -21,29 +37,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         exit;
     }
 
-    $materisiswaModel = []; 
+    $materiModel = [];
 
     if ($result->num_rows > 0) {
-        // Jika data ditemukan
         while ($row = $result->fetch_assoc()) {
-            $materisiswaModel[] = $row;
+            $materiModel[] = [
+                'id_materi' => $row['id_materi'],
+                'judul_materi' => $row['judul_materi'],
+                'deskripsi' => $row['deskripsi'],
+                'file_materi' => $row['file_materi'],
+                'original_filename' => $row['original_filename'],
+                'nama_mapel' => $row['nama_mapel'],
+                'nama_kelas' => $row['nama_kelas'],
+                'nama_guru' => $row['nama_guru']
+            ];
         }
+        
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "materi_siswa_model" => $materisiswaModel
+            "data" => $materiModel
         ]);
     } else {
-        // Jika tidak ada data
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "materi_siswa_model" => [] 
+            "data" => []
         ]);
     }
 } else {
-    // Jika metode bukan GET
+    http_response_code(405);
     echo json_encode([
         "status" => "error",
-        "message" => "Metode tidak didukung"
+        "message" => "Method Not Allowed"
     ]);
 }
 

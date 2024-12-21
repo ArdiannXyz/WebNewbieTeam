@@ -1,55 +1,143 @@
 <?php
+declare(strict_types=1);
+
 include 'koneksi.php';
 
-// Create an instance of the Koneksi class
-$koneksiObj = new Koneksi();
-$koneksi = $koneksiObj->getKoneksi();
+// Set headers for JSON response
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET');
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-if (!$koneksi) {
-    die("Connection failed: " . mysqli_connect_error());
+// Response handler function
+function sendResponse($status, $message = '', $data = null, $errors = null, $httpCode = 200) {
+    http_response_code($httpCode);
+    $response = ['status' => $status];
+    
+    if (!empty($message)) $response['message'] = $message;
+    if ($data !== null) $response['data'] = $data;
+    if ($errors !== null) $response['errors'] = $errors;
+    
+    echo json_encode($response);
+    exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $tables = ['kelas', 'materi', 'mapel', 'siswa'];
-    $response = [];
-    $error_flag = false;
+try {
+    $database = new Koneksi();
+    $koneksi = $database->getKoneksi();
 
-    foreach ($tables as $table) {
-        $sql = "SELECT COUNT(*) as total FROM $table";
-        $result = mysqli_query($koneksi, $sql);
+    if (!$koneksi) {
+        throw new Exception('Koneksi database gagal');
+    }
 
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+        sendResponse('gagal', 'Metode tidak diizinkan', null, null, 405);
+    }
+
+    // Define queries for each metric we want to count
+    $queries = [
+        'users' => [
+            'query' => "SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as total_admin,
+                SUM(CASE WHEN role = 'guru' THEN 1 ELSE 0 END) as total_guru,
+                SUM(CASE WHEN role = 'siswa' THEN 1 ELSE 0 END) as total_siswa,
+                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_users
+            FROM users",
+            'error_msg' => 'Error counting users'
+        ],
+        'kelas' => [
+            'query' => "SELECT COUNT(*) as total FROM kelas",
+            'error_msg' => 'Error counting kelas'
+        ],
+        'mapel' => [
+            'query' => "SELECT COUNT(*) as total FROM mapel",
+            'error_msg' => 'Error counting mapel'
+        ],
+        'materi' => [
+            'query' => "SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_materi
+            FROM materi",
+            'error_msg' => 'Error counting materi'
+        ],
+        'tugas' => [
+            'query' => "SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_tugas
+            FROM tugas",
+            'error_msg' => 'Error counting tugas'
+        ],
+        'pengumpulan' => [
+            'query' => "SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'tepat_waktu' THEN 1 ELSE 0 END) as tepat_waktu,
+                SUM(CASE WHEN status = 'terlambat' THEN 1 ELSE 0 END) as terlambat,
+                SUM(CASE WHEN status = 'belum_mengumpulkan' THEN 1 ELSE 0 END) as belum_mengumpulkan
+            FROM pengumpulan",
+            'error_msg' => 'Error counting pengumpulan'
+        ]
+    ];
+
+    $statistics = [];
+    $errors = [];
+
+    foreach ($queries as $key => $queryData) {
+        $result = $koneksi->query($queryData['query']);
+        
         if ($result === false) {
-            $error_flag = true;
-            $response['errors'][] = [
-                "table" => $table,
-                "message" => "SQL Error: " . mysqli_error($koneksi)
+            $errors[] = [
+                'table' => $key,
+                'message' => $queryData['error_msg'],
+                'error' => $koneksi->error
             ];
             continue;
         }
 
-        $row = mysqli_fetch_assoc($result);
-        $response['data'][$table] = [
-            "table_name" => $table,
-            "total_records" => $row['total']
-        ];
+        $row = $result->fetch_assoc();
+        $statistics[$key] = $row;
+        $result->free();
     }
 
-    if ($error_flag) {
-        $response['status'] = 'error';
+    // Additional calculations if needed
+    if (isset($statistics['users'])) {
+        $statistics['users']['percentage_active'] = 
+            ($statistics['users']['total'] > 0) 
+            ? round(($statistics['users']['active_users'] / $statistics['users']['total']) * 100, 2)
+            : 0;
+    }
+
+    if (isset($statistics['pengumpulan'])) {
+        $total_submissions = $statistics['pengumpulan']['total'];
+        if ($total_submissions > 0) {
+            $statistics['pengumpulan']['persentase'] = [
+                'tepat_waktu' => round(($statistics['pengumpulan']['tepat_waktu'] / $total_submissions) * 100, 2),
+                'terlambat' => round(($statistics['pengumpulan']['terlambat'] / $total_submissions) * 100, 2),
+                'belum_mengumpulkan' => round(($statistics['pengumpulan']['belum_mengumpulkan'] / $total_submissions) * 100, 2)
+            ];
+        }
+    }
+
+    if (!empty($errors)) {
+        sendResponse(
+            'partial',
+            'Beberapa data berhasil diambil dengan error',
+            $statistics,
+            $errors,
+            207
+        );
     } else {
-        $response['status'] = 'success';
+        sendResponse(
+            'sukses',
+            'Data statistik berhasil diambil',
+            $statistics
+        );
     }
 
-    echo json_encode($response);
-} else {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Metode tidak didukung"
-    ]);
+} catch (Exception $e) {
+    sendResponse('gagal', $e->getMessage(), null, null, 500);
+} finally {
+    if (isset($database)) {
+        $database->tutupKoneksi();
+    }
 }
 
-$koneksiObj->tutupKoneksi();
-?>
