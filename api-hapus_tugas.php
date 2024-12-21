@@ -2,7 +2,6 @@
 header('Content-Type: application/json');
 include 'koneksi.php';
 
-// Initialize response array
 $response = [
     'status' => 'error',
     'message' => '',
@@ -19,14 +18,14 @@ try {
         throw new Exception('Invalid JSON format: ' . json_last_error_msg(), 400);
     }
 
-    // Validate id_tugas
+    // Validate required parameters
     $id_tugas = isset($input['id_tugas']) ? filter_var($input['id_tugas'], FILTER_VALIDATE_INT) : 0;
     if (!$id_tugas) {
         throw new Exception('Invalid tugas ID', 400);
     }
 
-    // Optional: validate user permissions if provided
-    $user_id = $input['user_id'] ?? null;
+    // Validate user credentials if provided
+    $id_guru = $input['id_guru'] ?? null;
     $role = $input['role'] ?? null;
 
     // Create database connection
@@ -42,10 +41,10 @@ try {
 
     // Check if tugas exists and get related data
     $check_query = $koneksi->prepare("
-        SELECT t.*, m.file_materi 
+        SELECT t.*, u.role as user_role
         FROM tugas t
-        LEFT JOIN materi m ON t.id_tugas = m.id_materi
-        WHERE t.id_tugas = ? AND t.is_active = TRUE
+        JOIN users u ON t.id_guru = u.id
+        WHERE t.id_tugas = ? AND t.is_active = 1
     ");
     
     if (!$check_query) {
@@ -59,22 +58,22 @@ try {
 
     $result = $check_query->get_result();
     if ($result->num_rows === 0) {
-        throw new Exception('Tugas not found or already inactive', 404);
+        throw new Exception('Tugas tidak ditemukan atau sudah tidak aktif', 404);
     }
 
     $tugas = $result->fetch_assoc();
 
-    // Optional: Check if user has permission to delete this tugas
-    if ($user_id && $role !== 'admin') {
-        if ($tugas['id_guru'] != $user_id) {
-            throw new Exception('Unauthorized to delete this tugas', 403);
+    // Verify user authorization
+    if ($id_guru && $role !== 'admin') {
+        if ($tugas['id_guru'] != $id_guru) {
+            throw new Exception('Anda tidak memiliki akses untuk menghapus tugas ini', 403);
         }
     }
 
-    // Soft delete by setting is_active to FALSE instead of actual deletion
+    // Soft delete the tugas
     $update_query = $koneksi->prepare("
         UPDATE tugas 
-        SET is_active = FALSE, 
+        SET is_active = 0,
             updated_at = CURRENT_TIMESTAMP
         WHERE id_tugas = ?
     ");
@@ -85,45 +84,37 @@ try {
 
     $update_query->bind_param("i", $id_tugas);
     if (!$update_query->execute()) {
-        throw new Exception('Failed to deactivate tugas', 500);
+        throw new Exception('Gagal menonaktifkan tugas', 500);
     }
 
     if ($update_query->affected_rows === 0) {
-        throw new Exception('No changes made to tugas', 400);
+        throw new Exception('Tidak ada perubahan pada tugas', 400);
     }
 
-    // Log the deletion
-    $log_query = $koneksi->prepare("
-        INSERT INTO activity_log (
-            user_id, 
-            activity_type, 
-            resource_type, 
-            resource_id, 
-            details,
-            created_at
-        ) VALUES (?, 'delete', 'tugas', ?, ?, CURRENT_TIMESTAMP)
+    // Update related pengumpulan records status if needed
+    $update_pengumpulan = $koneksi->prepare("
+        UPDATE pengumpulan
+        SET status = 'belum_mengumpulkan'
+        WHERE id_tugas = ? AND status = 'terlambat'
     ");
 
-    if ($log_query) {
-        $details = json_encode([
-            'tugas_title' => $tugas['judul_tugas'],
-            'class_id' => $tugas['id_kelas'],
-            'subject_id' => $tugas['id_mapel']
-        ]);
-        $log_query->bind_param("iis", $user_id, $id_tugas, $details);
-        $log_query->execute();
+    if ($update_pengumpulan) {
+        $update_pengumpulan->bind_param("i", $id_tugas);
+        $update_pengumpulan->execute();
     }
 
     // Commit transaction
     $koneksi->commit();
 
     // Set success response
-    $response['status'] = 'success';
+    $response['status'] = 'sukses';
     $response['message'] = 'Tugas berhasil dihapus';
     $response['code'] = 'SUCCESS';
     $response['data'] = [
         'id_tugas' => $id_tugas,
-        'judul_tugas' => $tugas['judul_tugas']
+        'judul_tugas' => $tugas['judul_tugas'],
+        'id_mapel' => $tugas['id_mapel'],
+        'id_kelas' => $tugas['id_kelas']
     ];
 
 } catch (Exception $e) {
@@ -132,7 +123,7 @@ try {
         $koneksi->rollback();
     }
 
-    $response['status'] = 'error';
+    $response['status'] = 'gagal';
     $response['message'] = $e->getMessage();
     $response['code'] = $e->getCode() ?: 'SERVER_ERROR';
 
@@ -140,18 +131,10 @@ try {
     $http_code = is_numeric($e->getCode()) ? $e->getCode() : 500;
     http_response_code($http_code);
 
-    // Add debug information in development environment
-    if (getenv('ENVIRONMENT') === 'development') {
-        $response['debug'] = [
-            'trace' => $e->getTrace(),
-            'raw_input' => $raw_input ?? null
-        ];
-    }
-
 } finally {
     // Clean up resources
-    if (isset($log_query)) {
-        $log_query->close();
+    if (isset($update_pengumpulan)) {
+        $update_pengumpulan->close();
     }
     if (isset($update_query)) {
         $update_query->close();
@@ -164,7 +147,6 @@ try {
     }
 
     // Return JSON response
-    echo json_encode($response, JSON_PRETTY_PRINT);
+    echo json_encode($response);
     exit();
 }
-?>
