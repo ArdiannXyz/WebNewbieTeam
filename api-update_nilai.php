@@ -10,34 +10,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Debugging: Log semua data yang diterima
-error_log("POST data received: " . print_r($_POST, true));
-error_log("FILES data received: " . print_r($_FILES, true));
-
 // Ambil data dari request
-$id_pengumpulan = $_POST['id_pengumpulan'] ?? '';
-$nilai = floatval($_POST['nilai'] ?? 0);
-
-// Handle file upload if exists
-$file_path = '';
-if (isset($_FILES['file_nilai']) && $_FILES['file_nilai']['error'] === UPLOAD_ERR_OK) {
-    $upload_dir = 'uploads/'; // Sesuaikan dengan direktori upload Anda
-    $file_name = time() . '_' . basename($_FILES['file_nilai']['name']);
-    $file_path = $upload_dir . $file_name;
-    
-    if (!move_uploaded_file($_FILES['file_nilai']['tmp_name'], $file_path)) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Gagal upload file']);
-        exit;
-    }
-}
+$id_pengumpulan = isset($_POST['id_pengumpulan']) ? intval($_POST['id_pengumpulan']) : 0;
+$nilai = isset($_POST['nilai']) ? floatval($_POST['nilai']) : 0;
+$komentar = isset($_POST['komentar']) ? $_POST['komentar'] : null;
 
 // Validasi input
-if (empty($id_pengumpulan) || $nilai <= 0 || $nilai > 100) {
+if ($id_pengumpulan <= 0 || $nilai < 0 || $nilai > 100) {
     http_response_code(400);
     echo json_encode([
         'status' => 'error', 
-        'message' => 'Invalid input parameters',
+        'message' => 'Parameter tidak valid',
         'debug' => [
             'id_pengumpulan' => $id_pengumpulan,
             'nilai' => $nilai
@@ -50,56 +33,61 @@ try {
     $db = new Koneksi();
     $conn = $db->getKoneksi();
     
-    // Prepare statement untuk update
-    $query = "UPDATE pengumpulan SET 
-              nilai = ?, 
-              waktu_penilaian = CURRENT_TIMESTAMP";
+    // Set user_id untuk nilai_log (sesuaikan dengan sistem autentikasi Anda)
+    mysqli_query($conn, "SET @current_user_id = 1"); // Ganti dengan ID guru yang sedang login
     
-    // Tambahkan update file jika ada file yang diupload
-    $params = [];
-    $types = "d"; // untuk nilai (double)
-    $params[] = $nilai;
-    
-    if (!empty($file_path)) {
-        $query .= ", file_nilai = ?";
-        $types .= "s"; // untuk file_path (string)
-        $params[] = $file_path;
+    // Mulai transaksi
+    mysqli_begin_transaction($conn);
+
+    // Update pengumpulan
+    $query = "UPDATE pengumpulan SET nilai = ?, updated_at = CURRENT_TIMESTAMP";
+    $params = [$nilai];
+    $types = "d";
+
+    if ($komentar !== null) {
+        $query .= ", komentar = ?";
+        $params[] = $komentar;
+        $types .= "s";
     }
-    
-    $query .= " WHERE id = ?";
-    $types .= "i"; // untuk id_pengumpulan (integer)
+
+    $query .= " WHERE id_pengumpulan = ?";
     $params[] = $id_pengumpulan;
-    
+    $types .= "i";
+
     $stmt = mysqli_prepare($conn, $query);
-    
-    // Bind parameters dinamis
     mysqli_stmt_bind_param($stmt, $types, ...$params);
     
-    if (mysqli_stmt_execute($stmt)) {
-        if (mysqli_stmt_affected_rows($stmt) > 0) {
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Nilai berhasil diupdate'
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Data pengumpulan tidak ditemukan'
-            ]);
-        }
-    } else {
+    if (!mysqli_stmt_execute($stmt)) {
         throw new Exception(mysqli_error($conn));
     }
-    
-    mysqli_stmt_close($stmt);
-    
+
+    if (mysqli_stmt_affected_rows($stmt) === 0) {
+        throw new Exception('Data pengumpulan tidak ditemukan');
+    }
+
+    // Commit transaksi
+    mysqli_commit($conn);
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Nilai berhasil diupdate'
+    ]);
+
 } catch (Exception $e) {
+    // Rollback jika terjadi error
+    if (isset($conn)) {
+        mysqli_rollback($conn);
+    }
+    
     http_response_code(500);
     echo json_encode([
         'status' => 'error',
-        'message' => 'Server error: ' . $e->getMessage()
+        'message' => $e->getMessage()
     ]);
 } finally {
+    if (isset($stmt)) {
+        mysqli_stmt_close($stmt);
+    }
     if (isset($db)) {
         $db->tutupKoneksi();
     }

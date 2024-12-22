@@ -179,6 +179,7 @@ class UpdateTugas {
             
             return [
                 'id_tugas' => $data['id_tugas'],
+                'id_kelas' => $data['id_kelas'],
                 'judul_tugas' => $data['judul_tugas'],
                 'deskripsi' => $data['deskripsi'],
                 'deadline' => $data['deadline'],
@@ -204,7 +205,7 @@ class UpdateTugas {
             echo json_encode([
                 'status' => 'sukses',
                 'pesan' => 'Tugas berhasil diperbarui',
-                'data' => $updated_data
+                'tugas_data' => $updated_data
             ]);
 
         } catch (Exception $e) {
@@ -213,7 +214,8 @@ class UpdateTugas {
             
             echo json_encode([
                 'status' => 'gagal',
-                'pesan' => $e->getMessage()
+                'pesan' => $e->getMessage(),
+                'tugas_data' => $validated_data 
             ]);
             
         } finally {

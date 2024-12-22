@@ -118,7 +118,7 @@ try {
         echo json_encode([
             'status' => 'sukses',
             'pesan' => 'Data tugas berhasil diambil',
-            'data' => $daftarTugas
+           'tugas_data' => $daftarTugas
         ]);
 
     } else {

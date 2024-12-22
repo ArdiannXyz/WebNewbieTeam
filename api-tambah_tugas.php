@@ -118,7 +118,7 @@ try {
     echo json_encode([
         'status' => 'sukses',
         'pesan' => 'Tugas berhasil ditambahkan',
-        'data' => [
+        'tugas_data' => [
             'id_tugas' => $id_tugas,
             'judul_tugas' => $judul_tugas,
             'deskripsi' => $deskripsi,
