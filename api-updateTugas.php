@@ -193,21 +193,22 @@ class UpdateTugas {
     }
 
     public function update(): void {
+        $validated_data = null; // Inisialisasi variabel
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 throw new Exception('Method not allowed', 405);
             }
-
+    
             $validated_data = $this->validateInput($_POST);
             $file_path = $this->handleFileUpload();
             $updated_data = $this->updateTugas($validated_data, $file_path);
-
+    
             echo json_encode([
                 'status' => 'sukses',
                 'pesan' => 'Tugas berhasil diperbarui',
                 'tugas_data' => $updated_data
             ]);
-
+    
         } catch (Exception $e) {
             $http_code = $e->getCode() ?: 500;
             http_response_code($http_code);
@@ -215,7 +216,7 @@ class UpdateTugas {
             echo json_encode([
                 'status' => 'gagal',
                 'pesan' => $e->getMessage(),
-                'tugas_data' => $validated_data 
+                'tugas_data' => $validated_data // Ini sekarang tidak akan menyebabkan kesalahan
             ]);
             
         } finally {
