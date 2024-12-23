@@ -10,7 +10,7 @@ $koneksi = $database->getKoneksi();
 // Periksa metode permintaan
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // Query untuk mendapatkan data lengkap dari tabel mapel
-    $sql = "SELECT id_mapel, kode_mapel, nama_mapel, deskripsi FROM mapel WHERE is_active = 1";
+    $sql = "SELECT id_mapel, kode_mapel, nama_mapel, deskripsi FROM mapel";
     $result = $koneksi->query($sql);
 
     if ($result === false) {
@@ -39,14 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "data" => $mapelModel
+            "mapel_siswa" => $mapelModel
         ]);
     } else {
         // Jika tidak ada data
         http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "data" => []
+            "mapel_siswa" => []
         ]);
     }
 } else {
