@@ -15,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 m.judul_materi,
                 m.deskripsi,
                 m.file_materi,
-                m.original_filename,
                 mp.nama_mapel,
                 k.nama_kelas,
                 u.nama as nama_guru
@@ -46,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 'judul_materi' => $row['judul_materi'],
                 'deskripsi' => $row['deskripsi'],
                 'file_materi' => $row['file_materi'],
-                'original_filename' => $row['original_filename'],
                 'nama_mapel' => $row['nama_mapel'],
                 'nama_kelas' => $row['nama_kelas'],
                 'nama_guru' => $row['nama_guru']
@@ -56,13 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "data" => $materiModel
+            "materi_siswa" => $materiModel
         ]);
     } else {
         http_response_code(200);
         echo json_encode([
             "status" => "success",
-            "data" => []
+            "materi_siswa" => []
         ]);
     }
 } else {

@@ -5,65 +5,68 @@ header('Content-Type: application/json');
 $db = new Koneksi();
 $koneksi = $db->getKoneksi();
 
-$id_user = isset($_GET['user_id']) ? $_GET['user_id'] : '';
+// Ambil ID User dari parameter GET
+$id_user = isset($_GET['id']) ? $_GET['id'] : '';
 
 if (!empty($id_user)) {
-    // Query yang menggabungkan tabel users dan detail_siswa
-    $sql = "SELECT u.id, u.nama, u.email, ds.nisn, ds.telp, k.nama_kelas 
-            FROM users u 
-            JOIN detail_siswa ds ON u.id = ds.user_id 
-            LEFT JOIN kelas k ON ds.id_kelas = k.id_kelas 
-            WHERE u.id = ? AND u.role = 'siswa' AND u.is_active = 1";
-            
-    $stmt = $koneksi->prepare($sql);
+    // Query untuk mendapatkan data nisn dari detail_siswa dan nama dari users
+    $query = "
+        SELECT 
+            detail_siswa.nisn, 
+            users.nama 
+        FROM 
+            detail_siswa 
+        JOIN 
+            users 
+        ON 
+            detail_siswa.user_id = users.id 
+        WHERE 
+            users.id = ?
+    ";
+
+    // Logging query untuk debugging
+    error_log("Query: $query, ID User: $id_user");
+
+    $stmt = $koneksi->prepare($query);
     if (!$stmt) {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Error prepare statement: " . $koneksi->error
-        ]);
-        exit;
+        die(json_encode(["success" => false, "message" => "Error prepare statement: " . $koneksi->error]));
     }
 
+    // Bind parameter
     $stmt->bind_param("i", $id_user);
+
+    // Eksekusi query
     $stmt->execute();
+
+    // Ambil hasil
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        $siswa = $result->fetch_assoc();
-        
-        // Menyusun data respons
+        $data = $result->fetch_assoc();
         $response = [
-            "status" => "success",
+            "success" => true,
             "message" => "Data siswa ditemukan",
-            "data" => [
-                "id" => $siswa['id'],
-                "nama" => $siswa['nama'],
-                "email" => $siswa['email'],
-                "nisn" => $siswa['nisn'],
-                "telp" => $siswa['telp'],
-                "kelas" => $siswa['nama_kelas']
-            ]
+            "data" => $data
         ];
-        
-        http_response_code(200);
     } else {
-        http_response_code(404);
+        // Logging untuk debugging
+        error_log("Data tidak ditemukan untuk ID User: $id_user");
+        
         $response = [
-            "status" => "error",
-            "message" => "Siswa tidak ditemukan atau tidak aktif"
+            "success" => false,
+            "message" => "Siswa tidak ditemukan"
         ];
     }
 
-    echo json_encode($response);
+    // Tutup statement
     $stmt->close();
 } else {
-    http_response_code(400);
-    echo json_encode([
-        "status" => "error",
-        "message" => "ID User tidak diberikan"
-    ]);
+    $response = ["success" => false, "message" => "ID User tidak diberikan"];
 }
 
-$db->tutupKoneksi();
+// Tutup koneksi
+$koneksi->close();
+
+// Return response sebagai JSON
+echo json_encode($response);
 ?>
